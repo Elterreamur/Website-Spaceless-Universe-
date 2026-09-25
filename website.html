@@ -1,0 +1,426 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Mindmap Website</title>
+  <style>
+    :root {
+      --bg1: #0f172a;
+      --bg2: #111827;
+      --panel: rgba(15, 23, 42, 0.75);
+      --line: rgba(148, 163, 184, 0.35);
+      --text: #e2e8f0;
+      --muted: #94a3b8;
+      --root1: #8b5cf6;
+      --root2: #ec4899;
+      --node1: #22c55e;
+      --node2: #38bdf8;
+      --node3: #f59e0b;
+      --node4: #ef4444;
+      --shadow: 0 18px 35px rgba(15, 23, 42, 0.35);
+    }
+
+    * { box-sizing: border-box; }
+
+    html, body {
+      margin: 0;
+      height: 100%;
+      font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+      background: radial-gradient(circle at top, #1e293b 0%, var(--bg1) 40%, var(--bg2) 100%);
+      color: var(--text);
+      overflow: hidden;
+    }
+
+    body {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 30px;
+    }
+
+    .app {
+      position: relative;
+      width: min(1400px, 100%);
+      height: min(900px, 90vh);
+      border-radius: 26px;
+      background: rgba(15, 23, 42, 0.38);
+      border: 1px solid rgba(148, 163, 184, 0.18);
+      box-shadow: var(--shadow);
+      overflow: hidden;
+      backdrop-filter: blur(12px);
+    }
+
+    .header {
+      position: absolute;
+      top: 22px;
+      left: 26px;
+      right: 26px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      z-index: 10;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 10px 14px;
+      border-radius: 14px;
+      background: rgba(15, 23, 42, 0.42);
+      border: 1px solid rgba(148, 163, 184, 0.12);
+    }
+
+    .logo {
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--root1), var(--root2));
+      box-shadow: 0 0 18px rgba(139, 92, 246, 0.8);
+    }
+
+    .brand span {
+      font-size: 0.88rem;
+      letter-spacing: 0.08em;
+      color: var(--muted);
+      text-transform: uppercase;
+      font-weight: 700;
+    }
+
+    .stats {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .pill {
+      background: rgba(15, 23, 42, 0.55);
+      border: 1px solid rgba(148, 163, 184, 0.12);
+      border-radius: 999px;
+      padding: 8px 12px;
+      font-size: 0.75rem;
+      color: var(--muted);
+      letter-spacing: 0.04em;
+    }
+
+    .mindmap-wrap {
+      position: relative;
+      width: 100%;
+      height: 100%;
+      background:
+        linear-gradient(rgba(148,163,184,0.04) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(148,163,184,0.04) 1px, transparent 1px);
+      background-size: 28px 28px;
+    }
+
+    .mindmap {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      overflow: visible;
+    }
+
+    .svg-layer {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      z-index: 1;
+    }
+
+    .svg-layer path {
+      fill: none;
+      stroke: var(--line);
+      stroke-width: 2.2;
+      stroke-linecap: round;
+    }
+
+    .node {
+      position: absolute;
+      transform: translate(-50%, -50%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 16px;
+      padding: 12px 18px;
+      min-width: 110px;
+      max-width: 180px;
+      text-align: center;
+      color: #fff;
+      font-weight: 700;
+      letter-spacing: 0.02em;
+      cursor: pointer;
+      user-select: none;
+      box-shadow: 0 12px 24px rgba(15, 23, 42, 0.25);
+      transition: transform 0.2s ease, box-shadow 0.2s ease, filter 0.2s ease;
+      z-index: 2;
+      border: 1px solid rgba(255,255,255,0.15);
+      white-space: nowrap;
+    }
+
+    .node:hover {
+      transform: translate(-50%, -50%) scale(1.04);
+      box-shadow: 0 18px 28px rgba(15, 23, 42, 0.32);
+      filter: brightness(1.08);
+    }
+
+    .node.root {
+      min-width: 170px;
+      padding: 20px 26px;
+      border-radius: 20px;
+      font-size: 1.15rem;
+      background: linear-gradient(135deg, var(--root1), var(--root2));
+      box-shadow: 0 18px 36px rgba(139, 92, 246, 0.35);
+    }
+
+    .node.level-1 {
+      background: linear-gradient(135deg, #10b981, #22c55e);
+      font-size: 0.9rem;
+    }
+
+    .node.level-2 {
+      background: linear-gradient(135deg, #0ea5e9, #38bdf8);
+      font-size: 0.82rem;
+    }
+
+    .node.level-3 {
+      background: linear-gradient(135deg, #f59e0b, #f97316);
+      font-size: 0.74rem;
+    }
+
+    .node.level-4 {
+      background: linear-gradient(135deg, #ef4444, #f87171);
+      font-size: 0.7rem;
+    }
+
+    .side-note {
+      position: absolute;
+      right: 28px;
+      bottom: 25px;
+      background: rgba(15, 23, 42, 0.5);
+      border: 1px solid rgba(148, 163, 184, 0.15);
+      border-radius: 14px;
+      padding: 12px 14px;
+      color: var(--muted);
+      font-size: 0.8rem;
+      z-index: 10;
+      max-width: 280px;
+      line-height: 1.5;
+    }
+
+    @media (max-width: 760px) {
+      .header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 12px;
+      }
+
+      .stats {
+        gap: 8px;
+      }
+
+      .pill {
+        font-size: 0.65rem;
+      }
+
+      .node {
+        max-width: 120px;
+        min-width: 90px;
+      }
+
+      .node.root {
+        min-width: 130px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <div class="header">
+      <div class="brand">
+        <div class="logo"></div>
+        <span>MindMap</span>
+      </div>
+      <div class="stats">
+        <div class="pill">Strategi Produk</div>
+        <div class="pill">UX & Growth</div>
+        <div class="pill">Tim & Proses</div>
+      </div>
+    </div>
+
+    <div class="mindmap-wrap">
+      <svg class="svg-layer" id="svgLayer"></svg>
+      <div class="mindmap" id="mindmap"></div>
+    </div>
+
+    <div class="side-note">
+      Struktur ide utama: fokus pada produk, pengalaman pengguna, eksekusi tim, dan strategi pertumbuhan.
+    </div>
+  </div>
+
+  <script>
+    const mindmapData = {
+      label: "MindMap",
+      children: [
+        {
+          label: "Produk",
+          children: [
+            { label: "User Need" },
+            { label: "Fitur Utama" },
+            { label: "Roadmap" }
+          ]
+        },
+        {
+          label: "UX",
+          children: [
+            { label: "Research" },
+            { label: "Wireframe" },
+            { label: "Prototype" }
+          ]
+        },
+        {
+          label: "Tim",
+          children: [
+            { label: "Design" },
+            { label: "Dev" },
+            { label: "Marketing" }
+          ]
+        },
+        {
+          label: "Growth",
+          children: [
+            { label: "Content" },
+            { label: "Acquisition" },
+            { label: "Retention" }
+          ]
+        }
+      ]
+    };
+
+    const container = document.getElementById("mindmap");
+    const svgLayer = document.getElementById("svgLayer");
+
+    function setNodeLevel(node, level) {
+      node.level = level;
+      if (node.children) {
+        node.children.forEach((child) => setNodeLevel(child, level + 1));
+      }
+    }
+
+    function buildMindMap(root) {
+      const nodes = [];
+      const lines = [];
+
+      function traverse(node, parent = null, depth = 0) {
+        node.depth = depth;
+        nodes.push(node);
+
+        if (parent) {
+          lines.push({ parent, child: node });
+        }
+
+        if (node.children) {
+          node.children.forEach((child) => traverse(child, node, depth + 1));
+        }
+      }
+
+      traverse(root, null, 0);
+      return { nodes, lines };
+    }
+
+    function calculatePositions(root) {
+      const centerX = container.clientWidth / 2;
+      const centerY = container.clientHeight / 2;
+
+      function layout(node, cx, cy, startAngle, endAngle, depth = 0) {
+        if (!node.children || node.children.length === 0) return;
+
+        const step = (endAngle - startAngle) / node.children.length;
+        const childRadius = depth === 0 ? 220 : 170;
+
+        node.children.forEach((child, index) => {
+          const angle = startAngle + step * (index + 0.5);
+          const x = cx + Math.cos(angle) * childRadius;
+          const y = cy + Math.sin(angle) * childRadius;
+
+          child.x = x;
+          child.y = y;
+
+          if (child.children && child.children.length > 0) {
+            const childSpread = Math.PI / 2.2;
+            const localStart = angle - childSpread / 2;
+            const localEnd = angle + childSpread / 2;
+            layout(child, x, y, localStart, localEnd, depth + 1);
+          }
+        });
+      }
+
+      root.x = centerX;
+      root.y = centerY;
+      layout(root, centerX, centerY, -Math.PI / 2, Math.PI * 1.5, 0);
+    }
+
+    function drawLines(lines) {
+      svgLayer.innerHTML = "";
+      lines.forEach(({ parent, child }) => {
+        const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
+        const dx = child.x - parent.x;
+        const dy = child.y - parent.y;
+        const curve = Math.max(30, Math.abs(dx) * 0.35);
+
+        const startX = parent.x;
+        const startY = parent.y;
+        const endX = child.x;
+        const endY = child.y;
+
+        const midX = (startX + endX) / 2;
+        const midY = (startY + endY) / 2;
+
+        const cp1x = startX + (dx * 0.35);
+        const cp1y = startY + (dy * 0.1);
+        const cp2x = endX - (dx * 0.35);
+        const cp2y = endY - (dy * 0.1);
+
+        path.setAttribute(
+          "d",
+          `M ${startX} ${startY} C ${cp1x} ${cp1y}, ${cp2x} ${cp2y}, ${endX} ${endY}`
+        );
+        svgLayer.appendChild(path);
+      });
+    }
+
+    function renderNode(node) {
+      const el = document.createElement("div");
+      el.className = `node ${node.depth === 0 ? "root" : `level-${Math.min(node.depth, 4)}`}`;
+      el.textContent = node.label;
+      el.style.left = `${node.x}px`;
+      el.style.top = `${node.y}px`;
+      el.title = node.label;
+      return el;
+    }
+
+    function render() {
+      container.innerHTML = "";
+      svgLayer.innerHTML = "";
+
+      setNodeLevel(mindmapData, 0);
+      const { nodes, lines } = buildMindMap(mindmapData);
+      calculatePositions(mindmapData);
+
+      drawLines(lines);
+
+      nodes.forEach((node) => {
+        const el = renderNode(node);
+        container.appendChild(el);
+      });
+    }
+
+    window.addEventListener("resize", render);
+
+    render();
+  </script>
+</body>
+</html>
